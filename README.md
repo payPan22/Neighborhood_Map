@@ -21,7 +21,7 @@ This project is a single page application featuring a map of a neighborhood I wo
 6. Clicking a location marker on the map also displays relevant wikiPedia link and an article snippet about the selected location.
 7. NOTE: This map displays the locations stored in the data.js file.
 
-![]('https://github.com/payPan22/Neighborhood_Map/blob/master/SampleView.PNG')
+![Sample View of the Application](https://github.com/payPan22/Neighborhood_Map/blob/master/SampleView.PNG)
 
 ## My Learnings
 1. Understood how design patterns assist in developing a manageable codebase. 
