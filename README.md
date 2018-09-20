@@ -18,7 +18,7 @@ This project is a single page application featuring a map of a neighborhood I wo
 3. A list-view of location names is provided which displays all locations by default, and displays the filtered subset of locations when a search filter is applied.
 4. The search field is  a text input field or dropdown menu that filters the map markers and list items to locations matching the text input. 
 5. Clicking a location on the map displays panoramic street view of the location, and animates its associated map marker with color change from red to green when you hover over it.
-6. Clicking a location on the list displays unique information about the location.
+6. Clicking a location marker on the map also displays relevant wikiPedia link and an article snippet about the selected location.
 7. NOTE: This map displays the locations stored in the data.js file.
 
 ![Sample Image]('/SampleView.PNG')
