@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        html,
+        body {
+            font-family: Arial, sans-serif;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            height: 100%;
+            position: relative;
+        }
+
+        input {
+            font-size: 12px;
+        }
+
+        h1 {
+            color: #525454;
+            font-size: 22px;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+
+
+        hr {
+            background: #D0D7D9;
+            height: 1px;
+            margin: 20px 0 20px 0;
+            border: none;
+        }
+
+        #map {
+            bottom: 0px;
+            height: 100%;
+            left: 362px;
+            position: absolute;
+            right: 0px;
+        }
+
+        .options-box {
+            background: #d9d9d9;
+            border: 1px solid #999;
+            border-radius: 3px;
+            height: 100%;
+            line-height: 35px;
+            padding: 10px 10px 30px 10px;
+            text-align: left;
+            width: 340px;
+        }
+
+        #pano {
+            width: 200px;
+            height: 200px;
+        }
+
+		#search-box{
+		
+		border: 1px solid #999;
+            border-radius: 3px;
+            height: 100%;
+            line-height: 35px;
+            padding: 10px 10px 30px 10px;
+            text-align: left;
+		    width: 300px;
+            height: 20px;
+		}
+	 
+	 .articles {
+            background: #fff;
+            border: 1px solid #999;
+            border-radius: 3px;
+            height: 100%;
+            line-height: 35px;
+            padding: 10px 10px 30px 10px;
+            text-align: left;
+        }
+
+       </style>
+</head>
+<body>
+    <div class="container">
+        <div class="options-box">
+            <h1>Locations</h1>
+		<input id="search-box" type="text" placeholder="Ex: Google Office NYC or 75 9th Ave, New York, NY" data-bind="textInput: searchFilter"> 
+		
+		<ul data-bind="foreach: filteredLocationsList">
+			<li data-bind="text: title"></li>
+		</ul>
+		
+		<div id="wikipedia-container">
+        <h3 id="wikipedia-header">Relevant Wikipedia Links</h3>
+        <ul id="wikipedia-links"></ul>
+        </div>
+		</div>
+		
+        <div id="map"></div>
+		
+    </div>
+
+	
+	 <script src="js/lib/knockout-3.2.0.js"></script>
+	  <script src="js/lib/jquery.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDUagaXe8I7dNItqwYfyjygFo7mztjYCxk&v=3&callback=initMap" onerror="googleMapsError()">
+    </script>
+
+</body>
+</html>
