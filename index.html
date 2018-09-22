@@ -1,7 +1,9 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-
+    <title>Neighborhood Map</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <div class="container">
@@ -15,7 +17,15 @@
 
             <div id="wikipedia-container">
                 <h3 id="wikipedia-header">Relevant Wikipedia Links</h3>
-                <ul id="wikipedia-links"></ul>
+                <!--<ul id="wikipedia-links" data-bind="text: wikipediaContent"></ul>-->
+                <ul>
+                    <li>
+                        <a href="" data-bind="text:wikiLocation, attr: {href: wikipediaUrl}">
+                        </a>
+
+                        <p data-bind="text: wikipediaContent"></p>
+                    </li>
+                </ul>
             </div>
         </div>
 

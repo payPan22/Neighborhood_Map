@@ -9,6 +9,7 @@ function initMap() {
 
     map = new google.maps.Map(document.getElementById('map'), { center: mapCenter, zoom: 13 });
 
+    infoWindow = new google.maps.InfoWindow();
     // Binding to the View Model
     ko.applyBindings(new ViewModel());
 }
@@ -43,6 +44,7 @@ var LocationMarker = function (data) {
     //Highlight the location marker when user hovers over it
     self.marker.addListener('mouseover', function () {
         this.setIcon(highlightedIcon);
+        toggleBounce(this);
     });
 
     //Set the location marker back to default
@@ -53,9 +55,7 @@ var LocationMarker = function (data) {
 
     //The click on a location marker displays the panoramic street view and displays relevant wikipedia links on the side
     self.marker.addListener('click', function () {
-        infoWindow = new google.maps.InfoWindow();
-        populateLocationInfoWindow(self.marker, infoWindow);
-        loadWikipediaLinks(self.wikiLink);
+        populateLocationInfoWindow(this, infoWindow);
     });
 }
 
@@ -95,9 +95,13 @@ var ViewModel = function () {
 
     });
 
+    self.wikiLocation = ko.observable('');
+    self.wikipediaUrl = ko.observable('');
+    self.wikipediaContent = ko.observable('');
     //Making the marker bounce and showing relevant wikipedia links when a location is clicked on the List View
     self.setLocation = function (clickedLocation) {
-        loadWikipediaLinks(clickedLocation.wikiLink);
+        populateLocationInfoWindow(clickedLocation.marker, infoWindow);
+        loadWikipediaLinks(clickedLocation.wikiLink, self.wikipediaContent, self.wikipediaUrl, self.wikiLocation);
         toggleBounce(clickedLocation.marker);
     };
 
@@ -106,7 +110,8 @@ var ViewModel = function () {
 
 
 //Show the Relevant Wikipedia Links for the selected marker 
-function loadWikipediaLinks(locationStr) {
+function loadWikipediaLinks(locationStr, wikipediaContent, wikipediaUrl, wikiLocation) {
+
 
     var $wikiElem = $('#wikipedia-links');
     $wikiElem.text("");
@@ -114,7 +119,8 @@ function loadWikipediaLinks(locationStr) {
 
     //Show error if Timeout happens when trying to get response from Wikipedia
     var wikiRequestTimeout = setTimeout(function () {
-        $wikiElem.text("Failed to get wikipedia resources");
+        wikipediaContent("Failed to get wikipedia resources");
+
     }, 8000);
 
     //Make an AJAX Request to the Wikipedia API
@@ -130,7 +136,9 @@ function loadWikipediaLinks(locationStr) {
             for (var i = 0; i < articleList.length; i++) {
                 articleStr = articleList[i];
                 var url = 'http://en.wikipedia.org/wiki/' + articleStr;
-                $wikiElem.append('<li><a href="' + url + '">' + articleStr + '</a> <p class="articles">' + articleSnippet + '</p></li>');
+                wikiLocation(articleStr);
+                wikipediaUrl(url);
+                wikipediaContent(articleSnippet);
             };
 
             clearTimeout(wikiRequestTimeout);
@@ -138,6 +146,60 @@ function loadWikipediaLinks(locationStr) {
     });
     return false;
 }
+
+
+
+/*This function populates the infowindow when the marker is clicked. We'll only allow
+ one infowindow which will open at the marker that is clicked, and populate based
+ on that markers position.*/
+function populateLocationInfoWindow(marker, infowindow) {
+    // Check to make sure the infowindow is not already opened on this marker.
+    if (infowindow.marker != marker) {
+        // Clear the infowindow content to give the streetview time to load.
+        infowindow.setContent('');
+        infowindow.marker = marker;
+
+        // Make sure the marker property is cleared if the infowindow is closed.
+        infowindow.addListener('closeclick', function () {
+            infowindow.marker = null;
+        });
+        var streetViewService = new google.maps.StreetViewService();
+        var radius = 50;
+
+        var windowContent = '<h4>' + marker.title + '</h4>';
+
+        /* In case the status is OK, which means the pano was found, compute the
+        position of the streetview image, then calculate the heading, then get a
+      panorama from that and set the options*/
+        var getStreetView = function (data, status) {
+            if (status == google.maps.StreetViewStatus.OK) {
+                var nearStreetViewLocation = data.location.latLng;
+                var heading = google.maps.geometry.spherical.computeHeading(
+                    nearStreetViewLocation, marker.position);
+                infowindow.setContent(windowContent + '<div id="pano"></div>');
+                var panoramaOptions = {
+                    position: nearStreetViewLocation,
+                    pov: {
+                        heading: heading,
+                        pitch: 20
+                    }
+                };
+                var panorama = new google.maps.StreetViewPanorama(
+                    document.getElementById('pano'), panoramaOptions);
+            } else {
+                infowindow.setContent(windowContent + '<div style="color: red">No Street View Found</div>');
+            }
+        };
+        // Use streetview service to get the closest streetview image within
+        // 50 meters of the markers position
+        streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+        // Open the infowindow on the correct marker.
+        infowindow.open(map, marker);
+    }
+}
+
+
+
 
 
 //Customize the Location Marker Icon
@@ -153,60 +215,7 @@ function makeMarkerIcon(markerColor) {
 }
 
 
-/* This function populates the infowindow when the marker is clicked. We'll only allow
- one infowindow which will open at the marker that is clicked, and populate based
- on that markers position.*/
-function populateLocationInfoWindow(marker, infoWindow) {
 
-    // Check to make sure the infowindow is not already opened on this marker.
-
-    if (infoWindow.marker == marker) {
-        // Clear the infowindow content to give the streetview time to load.
-        infoWindow.setContent('');
-        infoWindow.marker = marker;
-    }
-
-    // Make sure the marker property is cleared if the infowindow is closed.
-    infoWindow.addListener('closeclick', function () {
-        infoWindow.marker = null;
-    });
-
-
-    var streetViewService = new google.maps.StreetViewService();
-    var radius = 50;
-    /* In case the status is OK, which means the pano was found, compute the
-      position of the streetview image, then calculate the heading, then get a
-      panorama from that and set the options*/
-    function getStreetView(data, status) {
-        if (status == google.maps.StreetViewStatus.OK) {
-            var nearStreetViewLocation = data.location.latLng;
-            var heading = google.maps.geometry.spherical.computeHeading(
-              nearStreetViewLocation, marker.position);
-            infoWindow.setContent('<div>' + marker.title + '</div><div id="pano"></div>');
-            var panoramaOptions = {
-                position: nearStreetViewLocation,
-                pov: {
-                    heading: heading,
-                    pitch: 30
-                }
-            };
-
-            var panorama = new google.maps.StreetViewPanorama(
-              document.getElementById('pano'), panoramaOptions);
-        } else {
-            infowindow.setContent('<div>' + marker.title + '</div>' +
-              '<div>No Street View Found</div>');
-        }
-    }
-
-    // Use streetview service to get the closest streetview image within 50 meters of the markers position
-    streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
-
-
-    // Open the infowindow on the correct marker.
-    infoWindow.open(map, marker);
-
-}
 
 //Marker bounces when the location is clicked in the list view
 function toggleBounce(marker) {
